@@ -11,38 +11,32 @@ function setupEventListeners() {
     document.getElementById('clear-btn').addEventListener('click', clearItinerary);
     document.getElementById('sort-day').addEventListener('click', () => sortItinerary('day'));
     document.getElementById('sort-location').addEventListener('click', () => sortItinerary('location'));
-    document.getElementById('filter-day').addEventListener('input', (e) => filterItinerary('day', e.target.value));
-    document.getElementById('filter-location').addEventListener('input', (e) => filterItinerary('location', e.target.value));
+    document.getElementById('filter-day').addEventListener('input', e => filterItinerary('day', e.target.value));
+    document.getElementById('filter-location').addEventListener('input', e => filterItinerary('location', e.target.value));
     document.getElementById('login-btn').addEventListener('click', () => toggleModal('login-modal', true));
     document.getElementById('signup-btn').addEventListener('click', () => toggleModal('signup-modal', true));
-    document.querySelectorAll('.close, .close-login, .close-signup').forEach(span => {
-        span.addEventListener('click', () => toggleModal(span.closest('.modal').id, false));
-    });
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    document.querySelector('.close-login').addEventListener('click', () => toggleModal('login-modal', false));
+    document.querySelector('.close-signup').addEventListener('click', () => toggleModal('signup-modal', false));
+    document.querySelector('.close').addEventListener('click', () => toggleModal('edit-modal', false));
     document.getElementById('signup-form').addEventListener('submit', handleSignup);
+    document.getElementById('login-form').addEventListener('submit', handleLogin);
     document.getElementById('edit-form').addEventListener('submit', handleEdit);
-    document.getElementById('map-type').addEventListener('change', initMap);
+    document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
 }
 
 function handleFormSubmit(e) {
     e.preventDefault();
-    
     const day = document.getElementById('day').value;
     const activity = document.getElementById('activity').value;
     const location = document.getElementById('location').value;
     const notes = document.getElementById('notes').value;
 
-    if (day === '' || activity === '' || location === '') {
-        alert('Please fill out all required fields.');
-        return;
-    }
-
     const itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
     itinerary.push({ day, activity, location, notes });
     localStorage.setItem('itinerary', JSON.stringify(itinerary));
 
-    displayItinerary();
     document.getElementById('itinerary-form').reset();
+    displayItinerary();
 }
 
 function printItinerary() {
@@ -102,26 +96,39 @@ function displayFilteredItinerary(filtered) {
 }
 
 function initMap() {
-    const mapType = document.getElementById('map-type').value;
     const mapElement = document.getElementById('map');
-    const map = new google.maps.Map(mapElement, {
-        center: { lat: -34.397, lng: 150.644 },
-        zoom: 8,
-        mapTypeId: mapType
-    });
+    const map = L.map(mapElement).setView([51.505, -0.09], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
 
     const itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
     itinerary.forEach(item => {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: item.location }, (results, status) => {
-            if (status === google.maps.GeocoderStatus.OK) {
-                new google.maps.Marker({
-                    map: map,
-                    position: results[0].geometry.location,
-                    title: item.activity
-                });
-            }
-        });
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${item.location}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const location = data[0];
+                    L.marker([location.lat, location.lon])
+                        .addTo(map)
+                        .bindPopup(`<strong>${item.activity}</strong><br>${item.location}`)
+                        .openPopup();
+                }
+            });
+    });
+
+    // Add user location detection
+    map.locate({ setView: true, maxZoom: 16 });
+    map.on('locationfound', e => {
+        L.marker(e.latlng, { icon: L.icon({ iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png' }) })
+            .addTo(map)
+            .bindPopup('You are here!')
+            .openPopup();
+    });
+
+    map.on('locationerror', () => {
+        alert('Unable to retrieve your location.');
     });
 }
 
@@ -131,7 +138,6 @@ function toggleModal(modalId, show) {
 
 function handleLogin(e) {
     e.preventDefault();
-    // Handle login logic
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     if (email && password) {
@@ -144,7 +150,6 @@ function handleLogin(e) {
 
 function handleSignup(e) {
     e.preventDefault();
-    // Handle signup logic
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
     if (email && password) {
@@ -202,5 +207,12 @@ function setupDataExport() {
         a.download = 'itinerary.json';
         a.click();
         URL.revokeObjectURL(url);
+    });
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    document.querySelectorAll('.modal-content').forEach(modalContent => {
+        modalContent.classList.toggle('dark-mode');
     });
 }
