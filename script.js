@@ -8,6 +8,11 @@ document.getElementById('itinerary-form').addEventListener('submit', function(e)
     const location = document.getElementById('location').value;
     const notes = document.getElementById('notes').value;
 
+    if (day === '' || activity === '' || location === '') {
+        alert('Please fill out all required fields.');
+        return;
+    }
+
     const itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
     itinerary.push({ day, activity, location, notes });
     localStorage.setItem('itinerary', JSON.stringify(itinerary));
@@ -23,6 +28,22 @@ document.getElementById('print-btn').addEventListener('click', function() {
 document.getElementById('clear-btn').addEventListener('click', function() {
     localStorage.removeItem('itinerary');
     displayItinerary();
+});
+
+document.getElementById('sort-day').addEventListener('click', function() {
+    sortItinerary('day');
+});
+
+document.getElementById('sort-location').addEventListener('click', function() {
+    sortItinerary('location');
+});
+
+document.getElementById('filter-day').addEventListener('input', function() {
+    filterItinerary('day', this.value);
+});
+
+document.getElementById('filter-location').addEventListener('input', function() {
+    filterItinerary('location', this.value);
 });
 
 function displayItinerary() {
@@ -82,3 +103,31 @@ document.getElementById('edit-form').addEventListener('submit', function(e) {
     displayItinerary();
     document.getElementById('edit-modal').style.display = 'none';
 });
+
+function sortItinerary(criteria) {
+    const itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
+    itinerary.sort((a, b) => a[criteria].localeCompare(b[criteria]));
+    localStorage.setItem('itinerary', JSON.stringify(itinerary));
+    displayItinerary();
+}
+
+function filterItinerary(criteria, value) {
+    const itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
+    const filtered = itinerary.filter(item => item[criteria].toLowerCase().includes(value.toLowerCase()));
+    displayFilteredItinerary(filtered);
+}
+
+function displayFilteredItinerary(filtered) {
+    const itineraryList = document.getElementById('itinerary-list');
+    itineraryList.innerHTML = '';
+    filtered.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<strong>Day:</strong> ${item.day} <br>
+                              <strong>Activity:</strong> ${item.activity} <br>
+                              <strong>Location:</strong> ${item.location} <br>
+                              <strong>Notes:</strong> ${item.notes} <br>
+                              <button onclick="editItem(${index})">Edit</button>
+                              <button onclick="deleteItem(${index})">Delete</button>`;
+        itineraryList.appendChild(listItem);
+    });
+}

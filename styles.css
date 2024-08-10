@@ -45,10 +45,26 @@ button {
     cursor: pointer;
     border-radius: 4px;
     margin: 5px;
+    transition: background-color 0.3s;
 }
 
 button:hover {
     background-color: #0056b3;
+}
+
+.filters {
+    margin: 20px 0;
+}
+
+.filters input {
+    width: calc(50% - 20px);
+    margin-right: 10px;
+    padding: 10px;
+}
+
+.filters button {
+    width: calc(50% - 20px);
+    margin: 5px;
 }
 
 ul {
@@ -62,6 +78,13 @@ li {
     padding: 10px;
     border-radius: 4px;
     position: relative;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 li button {
