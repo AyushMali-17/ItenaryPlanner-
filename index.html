@@ -8,7 +8,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Travel Itinerary Planner</h1>
+        <header>
+            <h1>Travel Itinerary Planner</h1>
+            <div class="auth">
+                <button id="login-btn">Login</button>
+                <button id="signup-btn">Sign Up</button>
+            </div>
+        </header>
         <form id="itinerary-form">
             <div class="form-group">
                 <label for="day">Day:</label>
@@ -35,6 +41,7 @@
             <button id="sort-location">Sort by Location</button>
         </div>
         <h2>Your Itinerary</h2>
+        <div id="map" class="map"></div>
         <ul id="itinerary-list"></ul>
         <button id="print-btn">Print Itinerary</button>
         <button id="clear-btn">Clear Itinerary</button>
@@ -65,6 +72,41 @@
             </form>
         </div>
     </div>
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-login">&times;</span>
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" name="login-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" name="login-password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-signup">&times;</span>
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" name="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password:</label>
+                    <input type="password" id="signup-password" name="signup-password" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
     <script src="script.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY"></script>
 </body>
 </html>
